@@ -1,0 +1,32 @@
+.main{
+    display: flex;
+    justify-content: center;
+}
+.main form{
+    display: flex;
+    flex-direction: column;
+    margin: 2rem;
+    border: 1px solid #ccc;
+    padding: 3rem;
+    border-radius: 10px;
+    width: 50%;
+}
+.main form input,.main form select{
+    padding: 0.5rem;
+    width: 100%;
+    outline: none;
+    border: none;
+    border-radius: 10px;
+    margin: 0.5rem 0;
+    font-size: 1.2rem;
+}
+.main form label{
+    text-align: center;
+}
+.main form button{
+    margin: 1rem 0;
+    padding: 0.5rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
