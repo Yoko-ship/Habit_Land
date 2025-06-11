@@ -62,3 +62,19 @@
 .calendar_day.done{
   background: #4ade80;
 }
+.filter{
+  display: flex;
+  justify-content: flex-start;
+  margin: 0 1rem;
+
+}
+.filter select{
+  margin: 0 1rem;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 10px;
+  background-color: #82AED2;
+  cursor: pointer;
+  color: black;
+  outline: none;
+}

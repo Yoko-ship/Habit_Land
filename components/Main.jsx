@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import classes from "@/app/page.module.css";
 import { useSelector } from "react-redux";
 import ButtonHanlders from "./ButtonHanlders";
@@ -8,7 +8,11 @@ import axios from "axios";
 import { removeHabit, toggleProgress, upgradeHabit } from "@/store/habits";
 import { store } from "@/store/store";
 function Main() {
+
+
   const habits = useSelector((state) => state.habits.habits);
+  const [filteredHabits,setFilteredHabits] = useState(habits)
+  const [filter,setFilter] = useState("")
   const dispatch = useDispatch();
   const today = new Date().toISOString().split("T")[0];
 
@@ -19,11 +23,12 @@ function Main() {
   };
 
   const onToggleProgress = (id) => {
-    dispatch(toggleProgress({ id: id, date: today }));
+    dispatch(toggleProgress({ id, date: today}));
     setTimeout(() =>{
       const updatedHabit = store.getState().habits.habits.find(h => h.id === id)
-      const progressData = Object.keys(updatedHabit.progress).toString()
-      const isDone = Object.values(updatedHabit.progress).toString()
+      const progressData = Object.keys(updatedHabit.progress)
+
+      const isDone = Object.values(updatedHabit.progress)
       axios.post("/api/progress",{id,progressData,isDone})
     },0)
   };
@@ -40,14 +45,35 @@ function Main() {
     createTable()
   },[])
 
+  useEffect(() =>{
+    if(!habits.length) return
+
+      if(filter === "Все" || !filter){
+        setFilteredHabits(habits)
+      }else{
+        const filtered = habits.filter(habit => habit.category === filter)
+        setFilteredHabits(filtered)
+      }
+  },[filter,habits])
+  
 
 
   return (
     <main className={classes.main}>
       <h2 className={classes.info}>Привычки</h2>
+      
+      <section className={classes.filter}>
+        <select onChange={(e) => setFilter(e.target.value)}>
+          <option>Все</option>
+          <option>Здоровье</option>
+          <option>Образование</option>
+          <option>Дом</option>
+          <option>Другое</option>
+        </select>
+      </section>
       <section className={classes.grid}>
-        {habits &&
-          habits.map((habit, index) => (
+        {filteredHabits &&
+          filteredHabits.map((habit, index) => (
             <div className={classes.grids} key={index}>
               <h3>Название: {habit.name}</h3>
               <p>

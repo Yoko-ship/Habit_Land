@@ -10,6 +10,7 @@ export const handleHabits = createSlice({
   reducers: {
     addHabit: (state, action) => {
       state.habits.push(action.payload);
+      console.log(state.habits)
     },
     upgradeHabit: (state, action) => {
       state.habits = action.payload;
@@ -24,12 +25,9 @@ export const handleHabits = createSlice({
       });
     },
     toggleProgress: (state, action) => {
-      const { id, date } = action.payload;
+      const { id, date} = action.payload;
       const habit = state.habits.find((h) => h.id === id);
       if (habit) {
-        if (!habit.progress) {
-          habit.progress = {};
-        }
         const prev = habit.progress[date] || false;
         habit.progress[date] = !prev;
       }

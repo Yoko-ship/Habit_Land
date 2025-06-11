@@ -17,6 +17,7 @@ function Form() {
     const duration = formData.get("duration");
     const id = Date.now()
     const progress = {}
+    console.log(progress)
     dispatch(
       addHabit({
         id,
@@ -25,7 +26,7 @@ function Form() {
         goal,
         date,
         duration,
-        progress
+        progress,
       })
     );
     await axios.post("/api/data",{id,name,category,date,duration,goal})
