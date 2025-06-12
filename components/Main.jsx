@@ -7,6 +7,7 @@ import { useDispatch } from "react-redux";
 import axios from "axios";
 import { removeHabit, toggleProgress, upgradeHabit } from "@/store/habits";
 import { store } from "@/store/store";
+import Reminder from "./Reminder";
 function Main() {
 
 
@@ -80,18 +81,16 @@ function Main() {
                 Категория: <strong>{habit.category}</strong>
               </p>
               <p>
-                Цель: <strong>{habit.goal}</strong>
-              </p>
-              <p>
                 Продолжительность: <strong>{habit.duration}</strong>
-              </p>
-              <p>
-                Частота: <strong>{habit.frequency}</strong>
               </p>
               <p>
                 Начало: <strong>{habit.date}</strong>
               </p>
+              <p>
+                Напоминания: <strong>{habit.reminder.split("T")[0]}</strong>
+              </p>
               <div className={classes.menu}>
+              <Reminder id={habit.id}/>
                 <button onClick={() => removeHanlder(habit.id)}>Удалить</button>
                 <button onClick={() => onToggleProgress(habit.id)}>
                   {habit.progress?.[today]
@@ -110,6 +109,7 @@ function Main() {
             </div>
           ))}
       </section>
+
     </main>
   );
 }

@@ -7,7 +7,7 @@ export async function GET(){
             id VARCHAR PRIMARY KEY,
             name VARCHAR NOT NULL,
             category VARCHAR NOT NULL,
-            aim VARCHAR NOT NULL,
+            reminder TIMESTAMP NOT NULL,
             date DATE NOT NULL,
             duration INTEGER NOT NULL
         )
@@ -21,8 +21,8 @@ export async function GET(){
             UNIQUE(habit_id,progress_date)
         )
     `
-    // await pool.query(request)
-    // await pool.query(progressRequest)
+    await pool.query(request)
+    await pool.query(progressRequest)
 
     const getHabits = `SELECT * FROM habits`
     const getHabitResult = (await pool.query(getHabits)).rows
@@ -49,11 +49,11 @@ export async function GET(){
 }
 export async function POST(req){
     const body = await req.json()
-    const {id,name,category,date,duration,goal} = body
+    const {id,name,category,date,duration,reminder} = body
     const request = `
-        INSERT INTO habits(id,name,category,aim,date,duration) VALUES($1,$2,$3,$4,$5,$6)
+        INSERT INTO habits(id,name,category,reminder,date,duration) VALUES($1,$2,$3,$4,$5,$6)
     `
-    await pool.query(request,[id,name,category,goal,date,duration])
+    await pool.query(request,[id,name,category,reminder,date,duration])
     return NextResponse.json({success:"Данные успешно записаны"},{status:200})
 }
 

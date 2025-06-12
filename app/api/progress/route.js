@@ -1,5 +1,6 @@
 import { pool } from "@/lib/db";
 import { NextResponse } from "next/server";
+
 export  async function POST(req){
     const body = await req.json()
     const {id,progressData,isDone} = body
@@ -18,4 +19,15 @@ export  async function POST(req){
     }
 
     return NextResponse.json({success:"Вы успешно сохранили данные"},{status:201})
+}
+
+export async function GET(req){
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id")
+    const request = "SELECT name,reminder FROM habits WHERE id = $1"
+    const result = await pool.query(request,[id])
+    if(!result){
+        console.log("Произошла ошибка при получении дахнны")
+    }
+    return NextResponse.json(result.rows)
 }

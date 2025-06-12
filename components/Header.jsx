@@ -12,6 +12,7 @@ function Header() {
             <li>
                 <Link href="/habits">Привычки</Link>
             </li>
+            <li><Link href="/stats">Cтатистика</Link></li>          
         </ul>
     </header>
   )

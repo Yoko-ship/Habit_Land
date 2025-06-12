@@ -12,24 +12,24 @@ function Form() {
   const handleData = async(prevState, formData) => {
     const name = formData.get("name");
     const category = formData.get("category");
-    const goal = formData.get("goal");
+    const reminder = formData.get("reminder");
     const date = formData.get("date");
     const duration = formData.get("duration");
     const id = Date.now()
     const progress = {}
-    console.log(progress)
+    console.log(reminder)
     dispatch(
       addHabit({
         id,
         name,
         category,
-        goal,
+        reminder,
         date,
         duration,
         progress,
       })
     );
-    await axios.post("/api/data",{id,name,category,date,duration,goal})
+    await axios.post("/api/data",{id,name,category,date,duration,reminder})
     .then(response => console.log("Вы успешно добавили товар"))
   };
   const [data, actionHandler, isPending] = useActionState(handleData, "");
@@ -47,8 +47,8 @@ function Form() {
           <option>Дом</option>
           <option>Другое</option>
         </select>
-        <label>Цель</label>
-        <input type="text" name="goal" required />
+        <label>Напоминания</label>
+        <input type="datetime-local" name="reminder" required />
         <label>Дата начала</label>
         <input type="date" name="date" required />
         <label>Продолжительность</label>
