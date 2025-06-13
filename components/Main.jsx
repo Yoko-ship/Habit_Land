@@ -23,8 +23,11 @@ function Main() {
     .then(response => console.log("Вы успешно удалили таблицу"))
   };
 
-  const onToggleProgress = (id) => {
+  const onToggleProgress = (id,progress) => {
     dispatch(toggleProgress({ id, date: today}));
+    if(!progress[today]){
+      const didVibrate = navigator.vibrate(200)
+    }
     setTimeout(() =>{
       const updatedHabit = store.getState().habits.habits.find(h => h.id === id)
       const progressData = Object.keys(updatedHabit.progress)
@@ -92,7 +95,7 @@ function Main() {
               <div className={classes.menu}>
               <Reminder id={habit.id}/>
                 <button onClick={() => removeHanlder(habit.id)}>Удалить</button>
-                <button onClick={() => onToggleProgress(habit.id)}>
+                <button onClick={() => onToggleProgress(habit.id,habit.progress)}>
                   {habit.progress?.[today]
                     ? "✅ Сегодня сделано"
                     : "Отметить как сделано"}

@@ -1,52 +1,75 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
-import { Pie } from "react-chartjs-2";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  CartesianGrid,
+} from "recharts";
 import classes from "./form.module.css";
 import axios from "axios";
-ChartJS.register(ArcElement, Tooltip, Legend);
-
 function Chart() {
-  const [information, setInformation] = useState(null);
+  const [habits, setHabits] = useState();
 
-  // useEffect(() => {
-  //   const getValues = async () => {
-  //     const response = await axios.get("/api/data");
-  //     const data = response.data;
+  useEffect(() => {
+    const getHabits = async () => {
+      await axios.get("/api/data").then((response) => {
+        setHabits(response.data);
+      });
+    };
+    getHabits();
+  }, []);
 
-  //     const labels = data.map((dat) => dat.name);
-  //     const values = data.map(dat => dat.progress)
-  //     const result = Object.assign({},...values)
-  //     console.log(result)
 
-  //     const expensesData = {
-  //       labels,
-  //       datasets: [
-  //         {
-  //           label: "Прогресс по привычкам",
-  //           data: values,
-  //           backgroundColor: [
-  //             "#FF6384",
-  //             "#36A2EB",
-  //             "#FFCE56",
-  //             "#4BC0C0",
-  //             "#9966FF",
-  //             "#FF9F40",
-  //           ],
-  //           borderWidth: 1,
-  //         },
-  //       ],
-  //     };
-  //     setInformation(expensesData);
-  //   };
-  //   getValues();
-  // }, []);
+  const dowloadHabits = ()=>{
+    if(!habits) return
+    const json = JSON.stringify(habits,null,2)
+    const blob = new Blob([json],{type:'application/json'})
+    const url = URL.createObjectURL(blob)
+
+    const link = document.createElement("a")
+    link.href = url
+    link.download = "data.json";
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
   return (
-    // <div className={classes.chart}>
-    //   <div className={classes.pies}>
-    //     {information && <Pie data={information} />}
-    //   </div>
-    // </div>
+    <main className={classes}>
+      <section className={classes.stats}>
+        <h2>Статистика привычек</h2>
+        <button onClick={dowloadHabits}>Скачать данные </button>
+      </section>
+      <div className={classes.chart}>
+        {habits &&
+          habits.map((habit, index) => {
+            const data = Object.entries(habit.progress).map(([date, done]) => ({
+              date,
+              done: done ? 1 : 0,
+            }));
+            return (
+              <div key={index} className={classes.pie}>
+                <h3>{habit.name}</h3>
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={data}>
+                    <XAxis dataKey={"date"} />
+                    <YAxis allowDecimals={false} />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="done" fill="green" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            );
+          })}
+        ;
+      </div>
+    </main>
   );
 }
 

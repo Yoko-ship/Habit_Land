@@ -1,38 +1,11 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import classes from "./form.module.css";
 import { useActionState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { addHabit } from "@/store/habits";
-import axios from "axios";
+import { handleHabits } from "@/lib/handler";
 function Form() {
-  const dispatch = useDispatch();
-  const habit = useSelector((state) => state.habits.habits)
-  const handleData = async(prevState, formData) => {
-    const name = formData.get("name");
-    const category = formData.get("category");
-    const reminder = formData.get("reminder");
-    const date = formData.get("date");
-    const duration = formData.get("duration");
-    const id = Date.now()
-    const progress = {}
-    console.log(reminder)
-    dispatch(
-      addHabit({
-        id,
-        name,
-        category,
-        reminder,
-        date,
-        duration,
-        progress,
-      })
-    );
-    await axios.post("/api/data",{id,name,category,date,duration,reminder})
-    .then(response => console.log("Вы успешно добавили товар"))
-  };
-  const [data, actionHandler, isPending] = useActionState(handleData, "");
+  const [data, actionHandler] = useActionState(handleHabits, "");
   
 
   return (

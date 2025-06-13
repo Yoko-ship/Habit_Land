@@ -1,0 +1,44 @@
+.main{
+    display: flex;
+
+}
+.form{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 3rem auto;
+    width: 50%;
+    border: 1px solid rgb(141, 221, 22);
+    box-shadow: 2px 2px 2px rgba(141, 221, 22, 0.5);
+    background-color: #141414;
+    border-radius: 10px;
+    padding: 1rem;
+}
+.form input{
+    padding: 0.5rem;
+    width: 90%;
+    outline: none;
+    border: none;
+    border-radius: 10px;
+    margin: 0.5rem 0;
+    font-size: 1.2rem;
+}
+.form button{
+    margin: 1rem 0;
+    padding: 0.5rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    width: 50%;
+    font-size: 1rem;
+}
+.registerLink{
+    margin-top: 2rem; 
+}
+.registerLink a{
+    text-decoration: none;
+}
+.error{
+    margin: 1rem;
+    color: red;
+}

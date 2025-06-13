@@ -2,9 +2,18 @@ import { pool } from "@/lib/db"
 import { NextResponse } from "next/server"
 
 export async function GET(){
+    const createUser = `
+    CREATE TABLE IF NOT EXISTS users(
+        id SERIAL PRIMARY KEY,
+        email VARCHAR NOT NULL,
+        password VARCHAR NOT NULL
+    )
+    `
+
     const request = `
         CREATE TABLE IF NOT EXISTS habits(
             id VARCHAR PRIMARY KEY,
+            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
             name VARCHAR NOT NULL,
             category VARCHAR NOT NULL,
             reminder TIMESTAMP NOT NULL,
@@ -21,6 +30,8 @@ export async function GET(){
             UNIQUE(habit_id,progress_date)
         )
     `
+
+    await pool.query(createUser)
     await pool.query(request)
     await pool.query(progressRequest)
 
