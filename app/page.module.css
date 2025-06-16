@@ -6,11 +6,15 @@
   list-style: none;
   display: flex;
   justify-content: space-between;
+  flex-wrap: wrap;
 }
-.header a{
+.header a,.header li{
   text-decoration: none;
   color: black;
   font-size: 1.3rem;
+}
+.leave{
+  cursor: pointer;
 }
 .info{
   text-align: center;
@@ -77,4 +81,32 @@
   cursor: pointer;
   color: black;
   outline: none;
+}
+
+@media screen  and (max-width:1200px){
+  .grid{
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+  }
+}
+@media screen and (max-width:800px) {
+  .grid{
+    display: grid;
+    grid-template-columns: repeat(2,1fr);
+  }
+}
+@media screen and (max-width:500px) {
+  .grid{
+    display: grid;
+    grid-template-columns: repeat(1,1fr);
+    margin-left: 2rem;
+  }
+  .header li,.header a{
+    font-size: 1rem;
+  }
+}
+@media screen and (max-width:300px){
+  .header li,.header a{
+    font-size: 0.5rem;
+  }
 }

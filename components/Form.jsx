@@ -4,12 +4,15 @@ import React from "react";
 import classes from "./form.module.css";
 import { useActionState } from "react";
 import { handleHabits } from "@/lib/handler";
+import { useSelector } from "react-redux";
 function Form() {
   const [data, actionHandler] = useActionState(handleHabits, "");
+  const token = useSelector((state) => state.habits.token);
   
 
   return (
     <main className={classes.main}>
+      {token && (
       <form action={actionHandler}>
         <label>Название привычки</label>
         <input type="text" name="name" required />
@@ -26,9 +29,13 @@ function Form() {
         <input type="date" name="date" required />
         <label>Продолжительность</label>
         <input type="number" name="duration" required min={10} max={30}/>
-
+        <input type="text" defaultValue={token}  style={{display:"none"}} name="token"/>
         <button>Создать привычку</button>
       </form>
+      )}
+      {!token && (
+        <h2>Пожалуста войдите в аккаунт чтобы добавить привычки</h2>
+      )}
     </main>
   );
 }

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import React from 'react'
 import classes from "@/app/page.module.css"
+import LoginHeader from './LoginHeader'
 
 function Header() {
   return (
@@ -13,7 +14,7 @@ function Header() {
                 <Link href="/habits">Привычки</Link>
             </li>
             <li><Link href="/stats">Cтатистика</Link></li>       
-            <li><Link href="/login">Войти</Link></li>   
+            <LoginHeader/>
         </ul>
     </header>
   )

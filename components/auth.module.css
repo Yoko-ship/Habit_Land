@@ -42,3 +42,13 @@
     margin: 1rem;
     color: red;
 }
+
+@media screen and (max-width:1200px) {
+    .main form{
+        width: 90%;
+    }
+    .chart{
+        display: grid;
+        grid-template-columns: repeat(3,1fr);
+      }
+}

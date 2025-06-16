@@ -1,5 +1,5 @@
 'use client'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { store } from '@/store/store'
 import { Provider } from 'react-redux'
 function Providers({children}) {

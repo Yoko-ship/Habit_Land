@@ -1,45 +1,13 @@
 import { pool } from "@/lib/db"
 import { NextResponse } from "next/server"
+import { authenticate } from "@/middleware/middlerae"
 
-export async function GET(){
-    const createUser = `
-    CREATE TABLE IF NOT EXISTS users(
-        id SERIAL PRIMARY KEY,
-        email VARCHAR NOT NULL,
-        password VARCHAR NOT NULL
-    )
-    `
 
-    const request = `
-        CREATE TABLE IF NOT EXISTS habits(
-            id VARCHAR PRIMARY KEY,
-            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-            name VARCHAR NOT NULL,
-            category VARCHAR NOT NULL,
-            reminder TIMESTAMP NOT NULL,
-            date DATE NOT NULL,
-            duration INTEGER NOT NULL
-        )
-    `
-    const progressRequest = `
-        CREATE TABLE IF NOT EXISTS progress(
-            id SERIAL PRIMARY KEY,
-            habit_id VARCHAR NOT NULL REFERENCES habits(id) ON DELETE CASCADE,
-            progress_date DATE NOT NULL,
-            done BOOLEAN DEFAULT FALSE,
-            UNIQUE(habit_id,progress_date)
-        )
-    `
-
-    await pool.query(createUser)
-    await pool.query(request)
-    await pool.query(progressRequest)
-
-    const getHabits = `SELECT * FROM habits`
-    const getHabitResult = (await pool.query(getHabits)).rows
+async function getHanlder(req,user){
+    const getHabits = `SELECT * FROM habits WHERE user_id = $1`
+    const getHabitResult = (await pool.query(getHabits,[user.id])).rows
     const getProgress = `SELECT * FROM progress`
     const getProgressResult = (await pool.query(getProgress)).rows
-    
     const result = getHabitResult.map((habit) =>{
         const habitDate = new Date(habit.date)
         habit.date = habitDate.toLocaleDateString("sv-SE")
@@ -58,13 +26,16 @@ export async function GET(){
     return NextResponse.json(result)
     
 }
-export async function POST(req){
+
+
+
+async function handler(req,user){
     const body = await req.json()
     const {id,name,category,date,duration,reminder} = body
     const request = `
-        INSERT INTO habits(id,name,category,reminder,date,duration) VALUES($1,$2,$3,$4,$5,$6)
+        INSERT INTO habits(id,user_id,name,category,reminder,date,duration) VALUES($1,$2,$3,$4,$5,$6,$7)
     `
-    await pool.query(request,[id,name,category,reminder,date,duration])
+    await pool.query(request,[id,user.id,name,category,reminder,date,duration])
     return NextResponse.json({success:"Данные успешно записаны"},{status:200})
 }
 
@@ -75,3 +46,6 @@ export async function DELETE(req){
     await pool.query(request,[id])
     return NextResponse.json({success:"Вы успешно удалили строку"})
 }
+
+export const POST = authenticate(handler)
+export const GET = authenticate(getHanlder)

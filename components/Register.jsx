@@ -7,8 +7,11 @@ import { useRouter } from "next/navigation";
 function Register() {
   const [data, actionFn] = useActionState(handleRegister, null);
   const router = useRouter()
+  
   useEffect(() =>{
-        if(data && data.success){
+        if(data && data.token){
+            const token = data.token
+            localStorage.setItem("token",token)
             router.push("/")
         }
   },[data])

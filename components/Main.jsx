@@ -5,67 +5,83 @@ import { useSelector } from "react-redux";
 import ButtonHanlders from "./ButtonHanlders";
 import { useDispatch } from "react-redux";
 import axios from "axios";
-import { removeHabit, toggleProgress, upgradeHabit } from "@/store/habits";
+import {
+  removeHabit,
+  toggleProgress,
+  upgradeHabit,
+  handleToken,
+} from "@/store/habits";
 import { store } from "@/store/store";
 import Reminder from "./Reminder";
 function Main() {
-
-
   const habits = useSelector((state) => state.habits.habits);
-  const [filteredHabits,setFilteredHabits] = useState(habits)
-  const [filter,setFilter] = useState("")
+  const token = useSelector((state) => state.habits.token);
+  const [filteredHabits, setFilteredHabits] = useState(habits);
+  const [filter, setFilter] = useState("");
   const dispatch = useDispatch();
   const today = new Date().toISOString().split("T")[0];
 
   const removeHanlder = (id) => {
     dispatch(removeHabit(id));
-    axios.delete("/api/data",{id})
-    .then(response => console.log("Вы успешно удалили таблицу"))
+    const updatedElement = filteredHabits.filter(habit => habit.id !== id)
+    setFilteredHabits(updatedElement)
+    axios
+      .delete("/api/data", { id })
   };
 
-  const onToggleProgress = (id,progress) => {
-    dispatch(toggleProgress({ id, date: today}));
-    if(!progress[today]){
-      const didVibrate = navigator.vibrate(200)
+  const onToggleProgress = (id, progress) => {
+    dispatch(toggleProgress({ id, date: today }));
+    if (!progress[today]) {
+      const didVibrate = navigator.vibrate(200);
     }
-    setTimeout(() =>{
-      const updatedHabit = store.getState().habits.habits.find(h => h.id === id)
-      const progressData = Object.keys(updatedHabit.progress)
+    setTimeout(() => {
+      const updatedHabit = store
+        .getState()
+        .habits.habits.find((h) => h.id === id);
+      const progressData = Object.keys(updatedHabit.progress);
 
-      const isDone = Object.values(updatedHabit.progress)
-      axios.post("/api/progress",{id,progressData,isDone})
-    },0)
+      const isDone = Object.values(updatedHabit.progress);
+      axios.post("/api/progress", { id, progressData, isDone });
+    }, 0);
   };
 
 
-  useEffect(() =>{
-    const createTable = async()=>{
-      await axios.get("/api/data")
-      .then(response => {
-        dispatch(upgradeHabit(response.data))
-      })
-      
+  useEffect(() => {
+    const tok = localStorage.getItem("token");
+    if (tok) {
+      dispatch(handleToken(tok));
     }
-    createTable()
-  },[])
-
-  useEffect(() =>{
-    if(!habits.length) return
-
-      if(filter === "Все" || !filter){
-        setFilteredHabits(habits)
-      }else{
-        const filtered = habits.filter(habit => habit.category === filter)
-        setFilteredHabits(filtered)
+    const createTable = async () => {
+      if(token){
+        await axios
+          .get("/api/data", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          })
+          .then((response) => {
+            dispatch(upgradeHabit(response.data));
+          });
+      };
       }
-  },[filter,habits])
-  
+    createTable();
+  }, [token]);
 
+  
+  useEffect(() => {
+    if (!habits.length) return;
+
+    if (filter === "Все" || !filter) {
+      setFilteredHabits(habits);
+    } else {
+      const filtered = habits.filter((habit) => habit.category === filter);
+      setFilteredHabits(filtered);
+    }
+  }, [filter, habits]);
 
   return (
     <main className={classes.main}>
       <h2 className={classes.info}>Привычки</h2>
-      
       <section className={classes.filter}>
         <select onChange={(e) => setFilter(e.target.value)}>
           <option>Все</option>
@@ -75,7 +91,8 @@ function Main() {
           <option>Другое</option>
         </select>
       </section>
-      <section className={classes.grid}>
+      {token && (
+        <section className={classes.grid}>
         {filteredHabits &&
           filteredHabits.map((habit, index) => (
             <div className={classes.grids} key={index}>
@@ -93,9 +110,11 @@ function Main() {
                 Напоминания: <strong>{habit.reminder.split("T")[0]}</strong>
               </p>
               <div className={classes.menu}>
-              <Reminder id={habit.id}/>
+                <Reminder id={habit.id} />
                 <button onClick={() => removeHanlder(habit.id)}>Удалить</button>
-                <button onClick={() => onToggleProgress(habit.id,habit.progress)}>
+                <button
+                  onClick={() => onToggleProgress(habit.id, habit.progress)}
+                >
                   {habit.progress?.[today]
                     ? "✅ Сегодня сделано"
                     : "Отметить как сделано"}
@@ -112,7 +131,7 @@ function Main() {
             </div>
           ))}
       </section>
-
+      )}
     </main>
   );
 }
