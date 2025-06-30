@@ -13,7 +13,7 @@ function LoginHeader() {
     if (getToken) {
       dispatch(handleToken(getToken))
     }
-  }, []);
+  }, [dispatch]);
 
   const leaveButton = ()=>{
     localStorage.removeItem("token")

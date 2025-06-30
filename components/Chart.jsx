@@ -1,5 +1,6 @@
 "use client";
-import React, {useEffect, useState } from "react";
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   BarChart,
   Bar,
@@ -10,30 +11,28 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import classes from "./form.module.css";
-import axios from "axios";
 import { useSelector } from "react-redux";
 function Chart() {
-  const [habits, setHabits] = useState();
-  const token = useSelector((state) => state.habits.token);
+  const token = useSelector((state) => state.habits.token)
 
-  useEffect(() => {
-    const getHabits = async () => {
-      if(token){
-        await axios.get("/api/data",{
-          headers:{
-            Authorization:`Bearer ${token}`
-          }
-        }).then((response) => {
-          setHabits(response.data);
-        });
-      };
-      }
-    getHabits();
-  }, [token]);
+  const {data,error,isLoading} = useQuery({
+    queryKey:['chart'],
+    queryFn: async()=>{
+      const res = await fetch("/api/data",{
+        method:"GET",
+        headers:{
+          Authorization:`Bearer ${token}`
+        }
+      })
+      if(!res.ok) throw new Error("Failed to fetch data")
+      return res.json()
+    }
+  })
+
 
   const dowloadHabits = () => {
-    if (!habits) return;
-    const json = JSON.stringify(habits, null, 2);
+    if (!data) return;
+    const json = JSON.stringify(data, null, 2);
     const blob = new Blob([json], { type: "application/json" });
     const url = URL.createObjectURL(blob);
 
@@ -45,6 +44,9 @@ function Chart() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
+
+  if(isLoading)return <p>Загрузка...</p>
+  if(error) return <p>Ошибка:{error.message}</p>
   return (
     <main className={classes}>
       {token && (
@@ -54,8 +56,8 @@ function Chart() {
             <button onClick={dowloadHabits}>Скачать данные </button>
           </section>
           <div className={classes.chart}>
-            {habits &&
-              habits.map((habit, index) => {
+            {data &&
+              data.map((habit, index) => {
                 const data = Object.entries(habit.progress).map(
                   ([date, done]) => ({
                     date,

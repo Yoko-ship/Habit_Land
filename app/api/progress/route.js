@@ -24,6 +24,7 @@ export  async function POST(req){
 export async function GET(req){
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id")
+    console.log(id)
     const request = "SELECT name,reminder FROM habits WHERE id = $1"
     const result = await pool.query(request,[id])
     if(!result){

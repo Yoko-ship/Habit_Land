@@ -4,7 +4,7 @@ import classes from "@/app/page.module.css";
 import { useSelector } from "react-redux";
 import ButtonHanlders from "./ButtonHanlders";
 import { useDispatch } from "react-redux";
-import axios from "axios";
+import { sendProgressData } from "./https";
 import {
   removeHabit,
   toggleProgress,
@@ -13,6 +13,7 @@ import {
 } from "@/store/habits";
 import { store } from "@/store/store";
 import Reminder from "./Reminder";
+import { useMutation, useQuery } from "@tanstack/react-query";
 function Main() {
   const habits = useSelector((state) => state.habits.habits);
   const token = useSelector((state) => state.habits.token);
@@ -21,12 +22,29 @@ function Main() {
   const dispatch = useDispatch();
   const today = new Date().toISOString().split("T")[0];
 
-  const removeHanlder = (id) => {
+
+
+  const mutation = useMutation({
+    mutationKey:['post-progress'],
+    mutationFn:sendProgressData,
+    onSuccess:() =>{
+      console.log("Успешно запостил")
+    },
+    onError:()=>{
+      console.log("Произошла ошибка при посте")
+    }
+  })
+
+  const removeHanlder = async(id) => {
     dispatch(removeHabit(id));
-    const updatedElement = filteredHabits.filter(habit => habit.id !== id)
-    setFilteredHabits(updatedElement)
-    axios
-      .delete("/api/data", { id })
+    const updatedElement = filteredHabits.filter((habit) => habit.id !== id);
+    setFilteredHabits(updatedElement);
+    const response = await fetch(`/api/data?id=${id}`,{
+      method:"DELETE",
+      headers:{
+        "Content-Type":"application/json"
+      }
+    })
   };
 
   const onToggleProgress = (id, progress) => {
@@ -41,33 +59,40 @@ function Main() {
       const progressData = Object.keys(updatedHabit.progress);
 
       const isDone = Object.values(updatedHabit.progress);
-      axios.post("/api/progress", { id, progressData, isDone });
+      mutation.mutate({id,progressData,isDone})
     }, 0);
   };
-
 
   useEffect(() => {
     const tok = localStorage.getItem("token");
     if (tok) {
       dispatch(handleToken(tok));
     }
-    const createTable = async () => {
-      if(token){
-        await axios
-          .get("/api/data", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          })
-          .then((response) => {
-            dispatch(upgradeHabit(response.data));
-          });
-      };
-      }
-    createTable();
-  }, [token]);
+  }, [dispatch]);
+
+  const {data,error,isLoading} = useQuery({
+    queryKey:['userHabits'],
+    queryFn:async()=>{
+      const res = await fetch("/api/data",{
+        method:"GET",
+        headers:{
+          Authorization: `Bearer ${token}`
+        }
+      })
+      if(!res.ok)throw new Error("Failed to fetch")
+      return res.json()
+    },
+    enabled: Boolean(token), //только если есть токен
+    // staleTime:1000 * 60 * 5, // Кеш
+  })
 
   
+  useEffect(() =>{
+    if(data){
+      dispatch(upgradeHabit(data))
+    }
+  },[data,dispatch])
+
   useEffect(() => {
     if (!habits.length) return;
 
@@ -78,6 +103,16 @@ function Main() {
       setFilteredHabits(filtered);
     }
   }, [filter, habits]);
+
+  //Всегда hanldim в конце
+  if(isLoading){
+    return <p>Загрузка...</p>
+  }
+  if(error){
+    return <p>Ошибка: {error.message}</p>
+  }
+
+
 
   return (
     <main className={classes.main}>
@@ -93,44 +128,46 @@ function Main() {
       </section>
       {token && (
         <section className={classes.grid}>
-        {filteredHabits &&
-          filteredHabits.map((habit, index) => (
-            <div className={classes.grids} key={index}>
-              <h3>Название: {habit.name}</h3>
-              <p>
-                Категория: <strong>{habit.category}</strong>
-              </p>
-              <p>
-                Продолжительность: <strong>{habit.duration}</strong>
-              </p>
-              <p>
-                Начало: <strong>{habit.date}</strong>
-              </p>
-              <p>
-                Напоминания: <strong>{habit.reminder.split("T")[0]}</strong>
-              </p>
-              <div className={classes.menu}>
-                <Reminder id={habit.id} />
-                <button onClick={() => removeHanlder(habit.id)}>Удалить</button>
-                <button
-                  onClick={() => onToggleProgress(habit.id, habit.progress)}
-                >
-                  {habit.progress?.[today]
-                    ? "✅ Сегодня сделано"
-                    : "Отметить как сделано"}
-                </button>
+          {filteredHabits &&
+            filteredHabits.map((habit, index) => (
+              <div className={classes.grids} key={index}>
+                <h3>Название: {habit.name}</h3>
+                <p>
+                  Категория: <strong>{habit.category}</strong>
+                </p>
+                <p>
+                  Продолжительность: <strong>{habit.duration}</strong>
+                </p>
+                <p>
+                  Начало: <strong>{habit.date}</strong>
+                </p>
+                <p>
+                  Напоминания: <strong>{habit.reminder.split("T")[0]}</strong>
+                </p>
+                <div className={classes.menu}>
+                  <Reminder id={habit.id} />
+                  <button onClick={() => removeHanlder(habit.id)}>
+                    Удалить
+                  </button>
+                  <button
+                    onClick={() => onToggleProgress(habit.id, habit.progress)}
+                  >
+                    {habit.progress?.[today]
+                      ? "✅ Сегодня сделано"
+                      : "Отметить как сделано"}
+                  </button>
+                </div>
+                <ButtonHanlders
+                  habitId={habit.id}
+                  habit={habits}
+                  key={habit.id}
+                  habitDuration={habit.duration}
+                  habitProgress={habit.progress}
+                  habitStartDate={habit.date}
+                />
               </div>
-              <ButtonHanlders
-                habitId={habit.id}
-                habit={habits}
-                key={habit.id}
-                habitDuration={habit.duration}
-                habitProgress={habit.progress}
-                habitStartDate={habit.date}
-              />
-            </div>
-          ))}
-      </section>
+            ))}
+        </section>
       )}
     </main>
   );

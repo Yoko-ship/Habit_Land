@@ -23,6 +23,7 @@ async function getHanlder(req,user){
             ...habit,progress:habitProgress
         }
     })
+    console.log(result)
     return NextResponse.json(result)
     
 }
@@ -42,6 +43,7 @@ async function handler(req,user){
 export async function DELETE(req){
     const { searchParams } = new URL(req.url)
     const id = searchParams.get("id")
+    console.log(id)
     const request = "DELETE FROM habits WHERE id = $1"
     await pool.query(request,[id])
     return NextResponse.json({success:"Вы успешно удалили строку"})
